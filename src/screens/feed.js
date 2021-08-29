@@ -1,16 +1,36 @@
 import React from 'react';
-import { Text, View, Button } from 'react-native';
+import { Text } from 'react-native';
+import { useQuery, gql } from '@apollo/client';
+
+// import NoteFeed
+import NoteFeed from '../components/NoteFeed';
+import Loading from '../components/Loading';
+
+const GET_NOTES = gql`
+  query notes {
+    notes {
+      id
+      createdAt
+      content
+      favoriteCount
+      author {
+        username
+        id
+        avatar
+      }
+    }
+  }
+`;
 
 const Feed = props => {
-    return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Note Feed</Text>
-            <Button
-                title="Keep reading"
-                onPress={() => props.navigation.navigate('Note')}
-            />
-        </View>
-    );
+    const { loading, error, data } = useQuery(GET_NOTES);
+
+    // if the data is loading, our app will display a loading indicator
+    if (loading) return <Loading />;
+    // if there is an error fetching the data, display an error message
+    if (error) return <Text>Error loading notes</Text>;
+    // if the query is successful and there are notes, return the feed of notes
+    return <NoteFeed notes={data.notes} navigation={props.navigation} />;
 };
 
 Feed.navigationOptions = {
